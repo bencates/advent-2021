@@ -4,7 +4,7 @@ mod submarine;
 
 use course::Command;
 use sonar::depth_increase;
-use submarine::Submarine;
+use submarine::{DiagnosticReport, Submarine};
 
 fn main() {
     let day01_input: Vec<u32> = include_str!("../data/day01.txt")
@@ -33,9 +33,16 @@ fn main() {
         "Incorrect location (product): {}",
         submarine1.position() * submarine1.depth()
     );
-    println!("{:?}", submarine2);
     println!(
         "Correct location (product): {}",
         submarine2.position() * submarine2.depth()
     );
+    println!();
+
+    let diagnostics: DiagnosticReport = include_str!("../data/day03.txt").parse().unwrap();
+
+    println!("Day 3");
+    println!("Power consumption: {}", diagnostics.power_consumption());
+    println!("Life support rating: {}", diagnostics.life_support_rating());
+    println!();
 }

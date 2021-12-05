@@ -1,4 +1,7 @@
+mod diagnostics;
+
 use crate::course::Command;
+pub use diagnostics::Report as DiagnosticReport;
 
 #[derive(Default, Debug)]
 pub struct Submarine {
