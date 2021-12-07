@@ -8,13 +8,13 @@ pub enum Command {
 }
 
 impl FromStr for Command {
-    type Err = ParseErr;
+    type Err = ParseError;
 
     fn from_str(cmd: &str) -> Result<Self, Self::Err> {
         let mut cmd = cmd.split_whitespace();
 
-        let action = cmd.next().ok_or(ParseErr())?;
-        let unit = cmd.next().ok_or(ParseErr())?;
+        let action = cmd.next().ok_or(ParseError())?;
+        let unit = cmd.next().ok_or(ParseError())?;
 
         let unit: i32 = unit.parse()?;
 
@@ -22,15 +22,15 @@ impl FromStr for Command {
             "up" => Ok(Command::Up(unit)),
             "down" => Ok(Command::Down(unit)),
             "forward" => Ok(Command::Forward(unit)),
-            _ => Err(ParseErr()),
+            _ => Err(ParseError()),
         }
     }
 }
 
 #[derive(Debug)]
-pub struct ParseErr();
+pub struct ParseError();
 
-impl From<std::num::ParseIntError> for ParseErr {
+impl From<std::num::ParseIntError> for ParseError {
     fn from(_error: std::num::ParseIntError) -> Self {
         Self()
     }

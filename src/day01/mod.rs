@@ -1,3 +1,29 @@
+use std::{fmt, num::ParseIntError, str::FromStr};
+
+pub struct Sonar(Vec<u32>);
+
+impl FromStr for Sonar {
+    type Err = ParseIntError;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        let soundings = input
+            .lines()
+            .map(|line| line.parse())
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(Self(soundings))
+    }
+}
+
+impl fmt::Display for Sonar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Simple depth count: {}", depth_increase(&self.0, 1))?;
+        writeln!(f, "Windowed depth count: {}", depth_increase(&self.0, 3))?;
+
+        Ok(())
+    }
+}
+
 pub fn depth_increase(soundings: &[u32], window_size: usize) -> usize {
     let sums: Vec<u32> = soundings
         .windows(window_size)

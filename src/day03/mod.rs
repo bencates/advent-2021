@@ -1,16 +1,36 @@
-use std::str::FromStr;
+use std::{fmt, str::FromStr};
 
-pub struct Report {
-    data: Vec<u32>,
-    data_size: u32,
+pub struct Diagnostics {
     gamma_rate: u32,
     epsilon_rate: u32,
     oxygen_generator_rating: u32,
     co2_scrubber_rating: u32,
 }
 
-impl Report {
-    pub fn new(data: &[u32]) -> Report {
+impl FromStr for Diagnostics {
+    type Err = std::num::ParseIntError;
+
+    fn from_str(report: &str) -> Result<Self, Self::Err> {
+        let data = report
+            .lines()
+            .map(|line| u32::from_str_radix(line, 2))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(Self::new(&data))
+    }
+}
+
+impl fmt::Display for Diagnostics {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Power consumption: {}", self.power_consumption())?;
+        writeln!(f, "Life support rating: {}", self.life_support_rating())?;
+
+        Ok(())
+    }
+}
+
+impl Diagnostics {
+    fn new(data: &[u32]) -> Diagnostics {
         let data_size = data
             .iter()
             .map(|num| u32::BITS - num.leading_zeros())
@@ -23,9 +43,7 @@ impl Report {
         let oxygen_generator_rating = oxygen_generator_rating(data, 1 << data_size - 1);
         let co2_scrubber_rating = co2_scrubber_rating(data, 1 << data_size - 1);
 
-        Report {
-            data: data.to_vec(),
-            data_size,
+        Diagnostics {
             gamma_rate,
             epsilon_rate,
             oxygen_generator_rating,
@@ -79,19 +97,6 @@ fn co2_scrubber_rating(data: &[u32], bitmask: u32) -> u32 {
     }
 }
 
-impl FromStr for Report {
-    type Err = std::num::ParseIntError;
-
-    fn from_str(report: &str) -> Result<Self, Self::Err> {
-        let data = report
-            .lines()
-            .map(|line| u32::from_str_radix(line, 2))
-            .collect::<Result<Vec<_>, _>>()?;
-
-        Ok(Self::new(&data))
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -103,17 +108,17 @@ mod tests {
 
     #[test]
     fn it_parses_the_file() {
-        let report: Report =
+        let report: Diagnostics =
             "00100\n11110\n10110\n10111\n10101\n01111\n00111\n11100\n10000\n11001\n00010\n01010\n"
                 .parse()
                 .unwrap();
 
-        assert_eq!(report.data, SAMPLE_DATA);
+        assert_eq!(report.gamma_rate, 0b10110);
     }
 
     #[test]
     fn it_calculates_the_power_consumption() {
-        let report = Report::new(&SAMPLE_DATA);
+        let report = Diagnostics::new(&SAMPLE_DATA);
 
         assert_eq!(report.gamma_rate, 0b10110);
         assert_eq!(report.epsilon_rate, 0b01001);
@@ -123,7 +128,7 @@ mod tests {
 
     #[test]
     fn it_calculates_the_life_support_rating() {
-        let report = Report::new(&SAMPLE_DATA);
+        let report = Diagnostics::new(&SAMPLE_DATA);
 
         assert_eq!(report.oxygen_generator_rating, 0b10111);
         assert_eq!(report.co2_scrubber_rating, 0b01010);
